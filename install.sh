@@ -73,7 +73,7 @@ download_scripts() {
     
     # 这里应该是实际的下载URL，现在使用GitHub raw URL作为示例
     # 实际部署时需要替换为真实的URL
-    local base_url="https://raw.githubusercontent.com/yourusername/ub_command_menu/main"
+    local base_url="https://github.com/Gaoce8888/ub/blob/main"
     
     echo -e "${YELLOW}下载主脚本...${NC}"
     curl -s -o ${SCRIPTS_DIR}/ub_commands.sh ${base_url}/ub_commands.sh
