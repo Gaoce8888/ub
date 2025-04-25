@@ -1,257 +1,131 @@
 #!/bin/bash
 
-# Ubuntu命令大全脚本安装器
-# 通过网络指令一键安装Ubuntu命令大全脚本
-
 # 颜色定义
-RED='\033[0;31m'
 GREEN='\033[0;32m'
-YELLOW='\033[0;33m'
+YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
-CYAN='\033[0;36m'
-NC='\033[0m' # 无颜色
+RED='\033[0;31m'
+NC='\033[0m' # 恢复默认颜色
 
-# 安装目录
-INSTALL_DIR="/usr/local/bin/ub_command_menu"
-SCRIPTS_DIR="/tmp/ub_command_menu_tmp"
-
-# 显示标题
-echo -e "${BLUE}┌───────────────────────────────────────────────┐${NC}"
-echo -e "${BLUE}│                                               │${NC}"
-echo -e "${BLUE}│${YELLOW}       Ubuntu命令大全脚本 - 网络安装器          ${BLUE}│${NC}"
-echo -e "${BLUE}│                                               │${NC}"
-echo -e "${BLUE}└───────────────────────────────────────────────┘${NC}"
-echo ""
-
-# 检查是否有root权限
-check_root() {
-    if [ "$(id -u)" != "0" ]; then
-        echo -e "${RED}错误: 此脚本需要root权限才能安装到系统目录${NC}"
-        echo -e "${YELLOW}请使用sudo运行此脚本${NC}"
-        exit 1
-    fi
-}
-
-# 显示进度条
-show_progress() {
-    local duration=$1
-    local prefix=$2
-    local size=30
-    local char="█"
-    
-    echo -ne "${prefix} [${NC}"
-    for ((i=0; i<size; i++)); do
-        echo -ne " "
-    done
-    echo -ne "${NC}] 0%\r"
-    
-    for ((i=0; i<=size; i++)); do
-        local pct=$((i*100/size))
-        echo -ne "${prefix} [${NC}"
-        for ((j=0; j<i; j++)); do
-            echo -ne "${GREEN}${char}${NC}"
-        done
-        for ((j=i; j<size; j++)); do
-            echo -ne " "
-        done
-        echo -ne "${NC}] ${pct}%\r"
-        sleep $(echo "scale=2; ${duration}/${size}" | bc)
-    done
+# 打印带颜色的标题
+print_header() {
+    echo -e "${BLUE}====================================================${NC}"
+    echo -e "${YELLOW}             Ubuntu 命令大全脚本安装器              ${NC}"
+    echo -e "${BLUE}====================================================${NC}"
     echo ""
 }
 
-# 创建临时目录
-create_temp_dir() {
-    echo -e "${CYAN}创建临时目录...${NC}"
-    mkdir -p ${SCRIPTS_DIR}
-    show_progress 0.5 "${CYAN}准备安装${NC}"
+# 打印成功消息
+print_success() {
+    echo -e "${GREEN}✓ $1${NC}"
 }
 
-# 下载脚本文件
-download_scripts() {
-    echo -e "${CYAN}下载脚本文件...${NC}"
-    
-    # 这里应该是实际的下载URL，现在使用GitHub raw URL作为示例
-    # 实际部署时需要替换为真实的URL
-    local base_url="https://github.com/Gaoce8888/ub/blob/main"
-    
-    echo -e "${YELLOW}下载主脚本...${NC}"
-    curl -s -o ${SCRIPTS_DIR}/ub_commands.sh ${base_url}/ub_commands.sh
-    
-    echo -e "${YELLOW}下载预设选项管理脚本...${NC}"
-    curl -s -o ${SCRIPTS_DIR}/preset_manager.sh ${base_url}/preset_manager.sh
-    
-    echo -e "${YELLOW}下载虚拟环境管理脚本...${NC}"
-    curl -s -o ${SCRIPTS_DIR}/virtual_env_manager.sh ${base_url}/virtual_env_manager.sh
-    
-    echo -e "${YELLOW}下载脚本授权工具...${NC}"
-    curl -s -o ${SCRIPTS_DIR}/script_auth_manager.sh ${base_url}/script_auth_manager.sh
-    
-    echo -e "${YELLOW}下载README文件...${NC}"
-    curl -s -o ${SCRIPTS_DIR}/README.md ${base_url}/README.md
-    
-    show_progress 2 "${CYAN}下载文件${NC}"
+# 打印错误消息
+print_error() {
+    echo -e "${RED}✗ $1${NC}"
 }
 
-# 创建安装目录
-create_install_dir() {
-    echo -e "${CYAN}创建安装目录...${NC}"
-    mkdir -p ${INSTALL_DIR}
-    show_progress 0.5 "${CYAN}准备安装目录${NC}"
+# 打印信息
+print_info() {
+    echo -e "${BLUE}➜ $1${NC}"
 }
 
-# 复制脚本文件到安装目录
-copy_scripts() {
-    echo -e "${CYAN}安装脚本文件...${NC}"
-    cp ${SCRIPTS_DIR}/*.sh ${INSTALL_DIR}/
-    cp ${SCRIPTS_DIR}/README.md ${INSTALL_DIR}/
-    show_progress 1 "${CYAN}复制文件${NC}"
-}
-
-# 设置执行权限
-set_permissions() {
-    echo -e "${CYAN}设置执行权限...${NC}"
-    chmod +x ${INSTALL_DIR}/*.sh
-    show_progress 0.5 "${CYAN}设置权限${NC}"
-}
-
-# 创建全局命令链接
-create_global_command() {
-    echo -e "${CYAN}创建全局命令...${NC}"
+# 主安装函数
+install_ub_commands() {
+    print_header
     
-    # 创建主命令链接
-    cat > /usr/local/bin/ubcmd << EOF
-#!/bin/bash
-${INSTALL_DIR}/ub_commands.sh "\$@"
-EOF
-    chmod +x /usr/local/bin/ubcmd
+    print_info "开始安装 Ubuntu 命令大全脚本..."
     
-    show_progress 0.5 "${CYAN}创建命令${NC}"
-}
-
-# 设置快捷键
-setup_shortcut() {
-    echo -e "${CYAN}设置快捷键...${NC}"
-    
-    # 检查是否已经设置了快捷键
-    if ! grep -q "# UB 命令大全快捷键" /etc/bash.bashrc; then
-        echo "" >> /etc/bash.bashrc
-        echo "# UB 命令大全快捷键" >> /etc/bash.bashrc
-        echo "bind -x '\"\C-f\":\"${INSTALL_DIR}/ub_commands.sh\"'" >> /etc/bash.bashrc
-        echo "" >> /etc/bash.bashrc
+    # 创建目标目录
+    print_info "创建安装目录..."
+    mkdir -p ~/ub_command_menu
+    if [ $? -eq 0 ]; then
+        print_success "目录创建成功"
+    else
+        print_error "目录创建失败"
+        exit 1
     fi
     
-    # 设置数字键 6 快捷键
-    if ! grep -q "# 数字键 6 快捷键" /etc/bash.bashrc; then
-        echo "# 数字键 6 快捷键" >> /etc/bash.bashrc
-        echo "bind -x '\"\e[17~\":\"${INSTALL_DIR}/ub_commands.sh\"'" >> /etc/bash.bashrc
-        echo "" >> /etc/bash.bashrc
+    # 复制脚本文件
+    print_info "复制脚本文件..."
+    
+    # 当前脚本所在目录
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    
+    # 复制所有脚本文件
+    cp "$SCRIPT_DIR/ub_commands.sh" \
+       "$SCRIPT_DIR/preset_manager.sh" \
+       "$SCRIPT_DIR/virtual_env_manager.sh" \
+       "$SCRIPT_DIR/script_auth_manager.sh" \
+       ~/ub_command_menu/
+    
+    if [ $? -eq 0 ]; then
+        print_success "脚本文件复制成功"
+    else
+        print_error "脚本文件复制失败"
+        exit 1
     fi
     
-    show_progress 1 "${CYAN}设置快捷键${NC}"
-}
-
-# 创建卸载脚本
-create_uninstall_script() {
-    echo -e "${CYAN}创建卸载脚本...${NC}"
+    # 设置执行权限
+    print_info "设置脚本执行权限..."
+    chmod +x ~/ub_command_menu/ub_commands.sh \
+             ~/ub_command_menu/preset_manager.sh \
+             ~/ub_command_menu/virtual_env_manager.sh \
+             ~/ub_command_menu/script_auth_manager.sh
     
-    cat > ${INSTALL_DIR}/uninstall.sh << EOF
-#!/bin/bash
-
-# Ubuntu命令大全脚本卸载器
-
-# 颜色定义
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[0;33m'
-BLUE='\033[0;34m'
-CYAN='\033[0;36m'
-NC='\033[0m' # 无颜色
-
-# 检查是否有root权限
-if [ "\$(id -u)" != "0" ]; then
-    echo -e "\${RED}错误: 此脚本需要root权限才能卸载${NC}"
-    echo -e "\${YELLOW}请使用sudo运行此脚本${NC}"
-    exit 1
-fi
-
-echo -e "\${BLUE}┌───────────────────────────────────────────────┐\${NC}"
-echo -e "\${BLUE}│                                               │\${NC}"
-echo -e "\${BLUE}│\${YELLOW}       Ubuntu命令大全脚本 - 卸载程序           \${BLUE}│\${NC}"
-echo -e "\${BLUE}│                                               │\${NC}"
-echo -e "\${BLUE}└───────────────────────────────────────────────┘\${NC}"
-echo ""
-
-echo -e "\${YELLOW}确定要卸载Ubuntu命令大全脚本吗? (y/n)${NC} "
-read -n 1 confirm
-
-if [[ \$confirm != "y" && \$confirm != "Y" ]]; then
-    echo -e "\n\${CYAN}卸载已取消.${NC}"
-    exit 0
-fi
-
-echo -e "\n\${CYAN}开始卸载...${NC}"
-
-# 删除全局命令
-echo -e "\${CYAN}删除全局命令...${NC}"
-rm -f /usr/local/bin/ubcmd
-
-# 删除快捷键设置
-echo -e "\${CYAN}删除快捷键设置...${NC}"
-sed -i '/# UB 命令大全快捷键/,+2d' /etc/bash.bashrc
-sed -i '/# 数字键 6 快捷键/,+2d' /etc/bash.bashrc
-
-# 删除安装目录
-echo -e "\${CYAN}删除安装目录...${NC}"
-rm -rf ${INSTALL_DIR}
-
-echo -e "\n\${GREEN}Ubuntu命令大全脚本已成功卸载!${NC}"
-echo -e "\${YELLOW}请重新加载终端或运行 'source /etc/bash.bashrc' 使更改生效.${NC}"
-EOF
+    if [ $? -eq 0 ]; then
+        print_success "执行权限设置成功"
+    else
+        print_error "执行权限设置失败"
+        exit 1
+    fi
     
-    chmod +x ${INSTALL_DIR}/uninstall.sh
+    # 配置快捷键
+    print_info "配置快捷键..."
     
-    # 创建卸载命令链接
-    cat > /usr/local/bin/ubcmd-uninstall << EOF
-#!/bin/bash
-sudo ${INSTALL_DIR}/uninstall.sh
-EOF
-    chmod +x /usr/local/bin/ubcmd-uninstall
+    # 检查 .bashrc 中是否已存在配置
+    if grep -q "# UB 命令大全快捷键" ~/.bashrc; then
+        print_info "快捷键已配置，跳过此步骤"
+    else
+        # 添加快捷键配置到 .bashrc
+        cat >> ~/.bashrc << 'EOL'
+
+# UB 命令大全快捷键
+bind -x '"\C-f":"$HOME/ub_command_menu/ub_commands.sh"'
+
+# 数字键 6 快捷键
+bind -x '"\e[17~":"$HOME/ub_command_menu/ub_commands.sh"'
+EOL
+        if [ $? -eq 0 ]; then
+            print_success "快捷键配置成功"
+        else
+            print_error "快捷键配置失败"
+            exit 1
+        fi
+    fi
     
-    show_progress 1 "${CYAN}创建卸载程序${NC}"
+    # 检查创建数据目录
+    print_info "创建数据目录..."
+    mkdir -p ~/ub_command_menu/data
+    if [ $? -eq 0 ]; then
+        print_success "数据目录创建成功"
+    else
+        print_error "数据目录创建失败"
+        exit 1
+    fi
+    
+    echo ""
+    echo -e "${GREEN}====================================================${NC}"
+    echo -e "${GREEN}      Ubuntu 命令大全脚本安装成功!                  ${NC}"
+    echo -e "${GREEN}====================================================${NC}"
+    echo ""
+    echo -e "使用方法:"
+    echo -e "  1. 重新加载配置: ${YELLOW}source ~/.bashrc${NC}"
+    echo -e "  2. 按 ${YELLOW}数字键6${NC} 或 ${YELLOW}Ctrl+F${NC} 启动命令菜单"
+    echo ""
+    echo -e "详细说明请查看: ${YELLOW}README.md${NC}"
+    echo ""
 }
 
-# 清理临时文件
-cleanup() {
-    echo -e "${CYAN}清理临时文件...${NC}"
-    rm -rf ${SCRIPTS_DIR}
-    show_progress 0.5 "${CYAN}清理临时文件${NC}"
-}
-
-# 显示安装完成信息
-show_completion() {
-    echo -e "\n${GREEN}Ubuntu命令大全脚本已成功安装!${NC}"
-    echo -e "${YELLOW}使用方法:${NC}"
-    echo -e "  1. 命令行输入 ${CYAN}ubcmd${NC} 启动脚本"
-    echo -e "  2. 按 ${CYAN}数字键6${NC} 或 ${CYAN}Ctrl+F${NC} 快速调出命令菜单"
-    echo -e "  3. 卸载请运行 ${CYAN}ubcmd-uninstall${NC}"
-    echo -e "\n${YELLOW}请重新加载终端或运行 'source /etc/bash.bashrc' 使快捷键生效.${NC}"
-}
-
-# 主函数
-main() {
-    check_root
-    create_temp_dir
-    download_scripts
-    create_install_dir
-    copy_scripts
-    set_permissions
-    create_global_command
-    setup_shortcut
-    create_uninstall_script
-    cleanup
-    show_completion
-}
-
-# 执行主函数
-main
+# 执行安装
+install_ub_commands

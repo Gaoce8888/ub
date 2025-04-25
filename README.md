@@ -14,8 +14,11 @@
 - **脚本授权工具**：提供一键授权所有脚本sh文件的功能
 - **图形化界面**：采用文本图形界面，操作简单直观
 - **项目部署专用**：包含大量项目部署相关的命令和工具
+- **网络一键安装**：支持通过网络一键安装部署
 
 ## 安装方法
+
+### 方法一：本地安装
 
 1. 将脚本文件复制到您的主目录下的 `ub_command_menu` 文件夹中：
 
@@ -37,14 +40,43 @@ chmod +x ~/ub_command_menu/ub_commands.sh ~/ub_command_menu/preset_manager.sh ~/
 source ~/.bashrc
 ```
 
+### 方法二：使用安装脚本
+
+1. 运行安装脚本：
+
+```bash
+./install.sh
+```
+
+2. 重新加载 `.bashrc` 文件使快捷键生效：
+
+```bash
+source ~/.bashrc
+```
+
+### 方法三：网络一键安装
+
+使用以下命令可以直接从网络安装：
+
+```bash
+# 使用 curl
+curl -fsSL http://your-server-address/ub/network_install.sh | bash
+
+# 使用 wget
+wget -O- http://your-server-address/ub/network_install.sh | bash
+```
+
+替换 `your-server-address` 为实际的服务器地址。
+
 ## 使用方法
 
 ### 调出命令菜单
 
-有两种方式可以调出命令菜单：
+有三种方式可以调出命令菜单：
 
-1. **数字键6**：在终端中按下数字键6
-2. **Ctrl+F**：在终端中按下 Ctrl+F 组合键
+1. **直接输入6**：在终端中输入 `6` 然后按回车键
+2. **数字键6**：在终端中按下数字键6（F6功能键）
+3. **Ctrl+F**：在终端中按下 Ctrl+F 组合键
 
 ### 主菜单选项
 
